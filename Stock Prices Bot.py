@@ -23,7 +23,7 @@ async def on_message(message):
     async def printPrice(stockName):
         stock = yf.Ticker(stockName)
         negativeFlag = False
-        price = stock.info["regularMarketPrice"]
+        price = stock.info["currentPrice"]
         try:
             if list(str(price)).count('.') == 0 or len(str(price).split('.', 1)[1]) < 2: # always have 2 decimals in price, ex. $1.1 to $1.10
                 price = format(price, ".2f")
@@ -82,7 +82,7 @@ async def on_message(message):
                     historicalPrice = format(historicalPrice, ".4f")
                 else: # if price is greater than or equal to 1, round to 2 decimals
                     historicalPrice = format(historicalPrice, ".2f")
-                currentPrice = format(stock.info["regularMarketPrice"])
+                currentPrice = format(stock.info["currentPrice"])
                 percentChange = round((float(currentPrice) - float(historicalPrice)) / float(historicalPrice) * 100, 2)
                 if float(currentPrice) >= float(historicalPrice):
                     await message.channel.send(f"The price of ${stockName.upper()} on {date} was ${historicalPrice}. Today, ${stockName.upper()} is worth ${currentPrice}, a {percentChange}% increase :chart_with_upwards_trend:")
