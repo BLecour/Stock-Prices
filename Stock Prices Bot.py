@@ -48,24 +48,30 @@ async def on_message(message):
 
         priceChangePercent = round(priceChange / yesterdaysPrice * 100, 2)
 
-        if float(price) < 1: # is price is < $1, use 4 decimal places in price change
+        # is price is < $1, use 4 decimal places for the price change
+        if float(price) < 1:
             if priceChange < 0:
                 negativeFlag = True
             priceChange = format(priceChange, ".4f")
         else:
-            priceChange = round(priceChange, 2) # round after the percent is calculated to get the correct percent
+            priceChange = round(priceChange, 2)
+        
+        # send a different message based on the sign of the price change (positive/negative)
         if negativeFlag:
             await message.channel.send(f"${stockName.upper()} = ${price} \n-${priceChange} :chart_with_downwards_trend: \n{priceChangePercent*-1}%")
         else:
             await message.channel.send(f"${stockName.upper()} = ${price} \n+${priceChange} :chart_with_upwards_trend: \n+{priceChangePercent}%")      
 
+    # ignore any message sent by the bot
     if message.author == client.user:
         return
 
     if message.content.startswith("!help"):
+
+        # send a message with all the commands for the bot
         await message.channel.send("\
         :money_with_wings: Get stock price: !get {stock symbol}\n"
-        ":date: Get stock price on specific date: !get {stock symbol} {date: YYYY-MM-DD)\n"
+        ":date: Get stock price on specific date: !get {stock symbol} {date: YYYY-MM-DD}\n"
         ":scissors: Get most recent stock split: !split {stock symbol}\n"
         ":thinking: Get recommendation rating: !recommendation {stock symbol}\n"
         ":chart_with_upwards_trend: Get stock price of today's biggest gainer: !topgainer\n"
@@ -73,14 +79,23 @@ async def on_message(message):
         ":bar_chart: Get stock's range for today: !range {stock symbol}")
 
     if message.content.startswith("!get"):
+
         stockName = str(message.content.split(" ")[1])
         stock = yf.Ticker(stockName)
-        if len(message.content.split(' ')) == 2: # if there are only 2 parts to the message ("!get" and the stock name, "AAPL" for ex.)
+
+        # if there are only 2 parts to the message ("!get" and the stock name, "AAPL" for ex.)
+        if len(message.content.split(' ')) == 2:
             await printPrice(stockName)
 
-        else: # if the user specified a date, then execute this part
+        else: 
+            # if the user specified a date, then execute this part
+            # this will calculate the range
             date = str(message.content.split(' ')[2])
             dates = date.split('-')
+
+            if len(dates) != 3:
+                await message.channel.send(":no_entry_sign: An error has occured. If you would like to get the stock price on a specific date, the syntax is: !get {stock symbol} {date: YYYY-MM-DD}")
+            
             endDate = int(dates[2]) + 1
             if endDate < 10:
                 endDates = dates[0] + '-' + dates[1] + '-' + '0' + str(endDate)
